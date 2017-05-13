@@ -44,7 +44,7 @@ class TopListAPI:
             'Authorization': 'Bearer ' + self.token
         }
         response = requests.get(TOPLIST_API + path, headers=headers)
-        content = response.value
+        content = response.content
         try:
             return json.loads(content)
         except ValueError:
@@ -67,6 +67,23 @@ class TopListAPI:
         except ValueError:
             print content
 
+    def _put(self, path, data):
+        if not self.token:
+            raise Exception("You need to log in")
+        headers = {
+            'Authorization': 'Bearer ' + self.token,
+            'Content-Type': 'application/json'
+        }
+        response = requests.put(
+                TOPLIST_API + path,
+                headers=headers, json=data
+        )
+        content = response.content
+        try:
+            return json.loads(content)
+        except ValueError:
+            print content
+
     def _collect_dollars(self, ndollars):
         response = self._post('/collect', {
             "productID": "top_dollar_" + str(ndollars),
@@ -79,12 +96,12 @@ class TopListAPI:
         return response
 
     def _set_quote(self, user_id, quote):
-        return self._post('/user/' + user_id + '/quote', {
+        return self._put('/user/' + str(user_id) + '/quote', {
             'quote': quote
         })
 
     def _get_orders(self, user_id):
-        return self._get('/orders/' + user_id)
+        return self._get('/orders/' + str(user_id))
 
     def get_filters(self):
         return self._get('/filters')
