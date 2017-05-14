@@ -45,14 +45,13 @@ class TopListAPI(object):
         return self._request(path, requests.post, data=data)
 
     def _collect_dollars(self, ndollars, filters=[], dateFilter=False):
-        response = self._post('/collect', {
+        return self._post('/collect', {
             'productID': 'top_dollar_' + str(ndollars),
             'filters': {
                 'filters': filters,
                 'dateFilter': dateFilter
             }
         })
-        return response
 
     def _set_quote(self, user_id, quote):
         return self._put('/user/' + str(user_id) + '/quote', {
