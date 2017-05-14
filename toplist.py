@@ -13,14 +13,58 @@ https://www.facebook.com/v2.8/dialog/oauth?redirect_uri=fb1832655376972820%3A%2F
 LOOK AT THE RESPONSE IN VERIFY TO FIND THE FACEBOOK TOKEN
 """
 
-class AuthException(Exception):
+class TopListException(Exception):
     pass
 
-class TopListAPI:
+class TopListAPI(object):
+
+    def _request(self, path, reqfun, data=None):
+        if not self.token:
+            raise ("You need to log in")
+        headers = {
+            'Authorization': 'Bearer ' + self.token,
+            'Content-Type': 'application/json'
+        }
+        response = reqfun(
+                TOPLIST_API + path,
+                headers=headers, json=data
+        )
+        content = response.content
+        try:
+            return json.loads(content)
+        except ValueError:
+            raise TopListException(content)
+
+    def _get(self, path):
+        return self._request(path, requests.get)
+
+    def _put(self, path, data):
+        return self._request(path, requests.put, data=data)
+
+    def _post(self, path, data):
+        return self._request(path, requests.post, data=data)
+
+    def _collect_dollars(self, ndollars):
+        response = self._post('/collect', {
+            "productID": "top_dollar_" + str(ndollars),
+            "filters": {
+                "filters": [],
+                "dateFilter": False
+            }
+        })
+        return response
+
+    def _set_quote(self, user_id, quote):
+        return self._put('/user/' + str(user_id) + '/quote', {
+            'quote': quote
+        })
+
+    def _get_orders(self, user_id):
+        return self._get('/orders/' + str(user_id))
 
     def login(self, fbtoken):
         response = requests.post(
-            "https://api.thetoplistapp.com/v1/login",
+            TOPLIST_API + "/login",
             json={'accessToken': fbtoken}
         )
         content = response.content
@@ -32,76 +76,8 @@ class TopListAPI:
                 algorithms=['HS256'],
                 options={'verify_signature': False}
             )['userID']
-            print "LOGGED IN!"
         except ValueError:
-            self.token = None
-            raise AuthException(content)
-
-    def _get(self, path):
-        if not self.token:
-            raise Exception("You need to log in")
-        headers = {
-            'Authorization': 'Bearer ' + self.token
-        }
-        response = requests.get(TOPLIST_API + path, headers=headers)
-        content = response.content
-        try:
-            return json.loads(content)
-        except ValueError:
-            print content
-
-    def _post(self, path, data):
-        if not self.token:
-            raise Exception("You need to log in")
-        headers = {
-            'Authorization': 'Bearer ' + self.token,
-            'Content-Type': 'application/json'
-        }
-        response = requests.post(
-                TOPLIST_API + path,
-                headers=headers, json=data
-        )
-        content = response.content
-        try:
-            return json.loads(content)
-        except ValueError:
-            print content
-
-    def _put(self, path, data):
-        if not self.token:
-            raise Exception("You need to log in")
-        headers = {
-            'Authorization': 'Bearer ' + self.token,
-            'Content-Type': 'application/json'
-        }
-        response = requests.put(
-                TOPLIST_API + path,
-                headers=headers, json=data
-        )
-        content = response.content
-        try:
-            return json.loads(content)
-        except ValueError:
-            print content
-
-    def _collect_dollars(self, ndollars):
-        response = self._post('/collect', {
-            "productID": "top_dollar_" + str(ndollars),
-            "filters": {
-                "filters": [],
-                "dateFilter": False
-            }
-        })
-        print "Collected " + str(ndollars) + " dollars"
-        return response
-
-    def _set_quote(self, user_id, quote):
-        return self._put('/user/' + str(user_id) + '/quote', {
-            'quote': quote
-        })
-
-    def _get_orders(self, user_id):
-        return self._get('/orders/' + str(user_id))
+            raise TopListException(content)
 
     def get_filters(self):
         return self._get('/filters')
@@ -113,7 +89,7 @@ class TopListAPI:
         return self._get('/order/' + str(oid))
 
     def registerpush(self, rid):
-        return self._get('/registerPush', {'registrationID': rid})
+        return self._post('/registerPush', {'registrationID': rid})
 
     def collect_1_dollar(self):
         return self._collect_dollars(1)
@@ -136,5 +112,5 @@ class TopListAPI:
     def get_orders(self):
         return self._get_orders(self.user_id)
 
-    def list(self):
+    def get_list(self):
         return self._get('/list')
