@@ -3,7 +3,7 @@ import requests
 import json
 import jwt
 
-TOPLIST_API = "https://api.thetoplistapp.com/v1"
+TOPLIST_API = 'https://api.thetoplistapp.com/v1'
 
 """
 LOGIN URL:
@@ -20,7 +20,7 @@ class TopListAPI(object):
 
     def _request(self, path, reqfun, data=None):
         if not self.token:
-            raise ("You need to log in")
+            raise TopListException('You need to log in')
         headers = {
             'Authorization': 'Bearer ' + self.token,
             'Content-Type': 'application/json'
@@ -46,10 +46,10 @@ class TopListAPI(object):
 
     def _collect_dollars(self, ndollars, filters=[], dateFilter=False):
         response = self._post('/collect', {
-            "productID": "top_dollar_" + str(ndollars),
-            "filters": {
-                "filters": filters,
-                "dateFilter": dateFilter
+            'productID': 'top_dollar_' + str(ndollars),
+            'filters': {
+                'filters': filters,
+                'dateFilter': dateFilter
             }
         })
         return response
@@ -64,7 +64,7 @@ class TopListAPI(object):
 
     def login(self, fbtoken):
         response = requests.post(
-            TOPLIST_API + "/login",
+            TOPLIST_API + '/login',
             json={'accessToken': fbtoken}
         )
         content = response.content
