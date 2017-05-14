@@ -44,12 +44,12 @@ class TopListAPI(object):
     def _post(self, path, data):
         return self._request(path, requests.post, data=data)
 
-    def _collect_dollars(self, ndollars):
+    def _collect_dollars(self, ndollars, filters=[], dateFilter=False):
         response = self._post('/collect', {
             "productID": "top_dollar_" + str(ndollars),
             "filters": {
-                "filters": [],
-                "dateFilter": False
+                "filters": filters,
+                "dateFilter": dateFilter
             }
         })
         return response
@@ -85,32 +85,32 @@ class TopListAPI(object):
     def get_entry(self, eid):
         return self._get('/entry/' + str(eid))
 
+    def get_orders(self):
+        return self._get_orders(self.user_id)
+
     def get_order(self, oid):
         return self._get('/order/' + str(oid))
 
     def registerpush(self, rid):
         return self._post('/registerPush', {'registrationID': rid})
 
-    def collect_1_dollar(self):
-        return self._collect_dollars(1)
+    def collect_1_dollar(self, filters=[], dateFilter=False):
+        return self._collect_dollars(1, filters, dateFilter)
 
-    def collect_5_dollars(self):
-        return self._collect_dollars(5)
+    def collect_5_dollars(self, filters=[], dateFilter=False):
+        return self._collect_dollars(5, filters, dateFilter)
 
-    def collect_10_dollars(self):
-        return self._collect_dollars(10)
+    def collect_10_dollars(self, filters=[], dateFilter=False):
+        return self._collect_dollars(10, filters, dateFilter)
 
-    def collect_30_dollars(self):
-        return self._collect_dollars(30)
+    def collect_30_dollars(self, filters=[], dateFilter=False):
+        return self._collect_dollars(30, filters, dateFilter)
 
-    def collect_60_dollars(self):
-        return self._collect_dollars(60)
+    def collect_60_dollars(self, filters=[], dateFilter=False):
+        return self._collect_dollars(60, filters, dateFilter)
 
     def set_quote(self, quote):
         return self._set_quote(self.user_id, quote)
-
-    def get_orders(self):
-        return self._get_orders(self.user_id)
 
     def get_list(self):
         return self._get('/list')
